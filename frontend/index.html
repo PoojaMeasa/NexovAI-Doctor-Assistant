@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NexovAI Doctor Assistant</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header>
+        <h1>NexovAI Doctor Assistant</h1>
+        <p>Your Voice-Based Appointment Assistant</p>
+    </header>
+
+    <main>
+        <section class="assistant-card">
+            <h2>Talk to NexovAI</h2>
+
+            <div id="status">Not Connected</div>
+
+            <div class="buttons">
+                <button id="startBtn">Start Call</button>
+                <button id="endBtn" disabled>End Call</button>
+            </div>
+
+            <h3>Conversation</h3>
+            <div id="transcript">
+                Your conversation will appear here.
+            </div>
+        </section>
+
+        <section class="doctors-card">
+            <h2>Available Doctors</h2>
+            <div id="doctorsList">
+                Loading doctors...
+            </div>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>

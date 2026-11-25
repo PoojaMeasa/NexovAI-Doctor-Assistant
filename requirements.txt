@@ -1,0 +1,6 @@
+pipecat-ai[google,elevenlabs,silero,webrtc]
+fastapi
+uvicorn
+mysql-connector-python
+python-dotenv
+loguru
