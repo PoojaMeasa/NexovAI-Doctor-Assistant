@@ -75,8 +75,8 @@ nexovai-doctor-assistant/
 ### 1. Clone the repository
 
 ```bash
-git clone YOUR_GITHUB_REPOSITORY_URL
-cd nexovai-doctor-assistant
+git clone https://github.com/PoojaMeasa/NexovAI-Doctor-Assistant.git
+cd NexovAI-Doctor-Assistant
 ```
 
 ### 2. Create a virtual environment
