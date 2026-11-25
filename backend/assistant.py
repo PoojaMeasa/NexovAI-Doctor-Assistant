@@ -389,7 +389,7 @@ def create_ai_services():
     llm = GoogleLLMService(
         api_key=gemini_key,
         settings=GoogleLLMService.Settings(
-            model="gemini-3.8-flash",
+            model="gemini-3.6-flash",
             system_instruction=SYSTEM_PROMPT
         ),
         retry_on_timeout=True,
