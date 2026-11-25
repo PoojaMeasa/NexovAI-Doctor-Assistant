@@ -7,10 +7,20 @@ from dotenv import load_dotenv
 from loguru import logger
 
 from pipecat.audio.vad.silero import SileroVADAnalyzer
-from pipecat.frames.frames import LLMRunFrame
+
+from pipecat.frames.frames import (
+    LLMRunFrame,
+    TranscriptionFrame,
+    TextFrame,
+    OutputTransportMessageFrame
+)
+
+from pipecat.processors.frame_processor import FrameProcessor
 from pipecat.pipeline.pipeline import Pipeline
 from pipecat.pipeline.worker import PipelineWorker, PipelineParams
+
 from pipecat.processors.aggregators.llm_context import LLMContext
+
 from pipecat.processors.aggregators.llm_response_universal import (
     LLMContextAggregatorPair,
     LLMUserAggregatorParams
@@ -28,6 +38,7 @@ from pipecat.services.google.llm import GoogleLLMService
 from pipecat.services.llm_service import FunctionCallParams
 
 from pipecat.transports.base_transport import TransportParams
+
 from pipecat.transports.smallwebrtc.transport import (
     SmallWebRTCTransport
 )
@@ -44,7 +55,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / ".env")
 
 
-# Import existing database functions
+# --------------------------------------------------
+# DATABASE FUNCTIONS
+# --------------------------------------------------
+
 try:
     from .doctor_service import (
         get_all_doctors,
@@ -73,13 +87,13 @@ except ImportError:
 SYSTEM_PROMPT = """
 You are NexovAI, a friendly doctor appointment voice assistant.
 
-Your main responsibilities are:
+Your responsibilities:
 
 1. Help patients find doctors.
-2. Help patients check appointment availability.
-3. Help patients book appointments.
-4. Help patients cancel appointments.
-5. Help patients check existing appointments.
+2. Check appointment availability.
+3. Book appointments.
+4. Cancel appointments.
+5. Check existing appointments.
 
 COMMUNICATION RULES:
 
@@ -87,19 +101,19 @@ COMMUNICATION RULES:
 - Keep responses short and simple.
 - Use English unless the patient speaks another language.
 - Ask one question at a time.
-- Never invent doctor details or appointment information.
+- Never invent doctor or appointment details.
 
 BOOKING RULES:
 
 1. Ask which doctor or specialization the patient needs.
-2. Find available doctors using the doctor tool.
+2. Find doctors using the doctor tool.
 3. Ask for the appointment date and time.
 4. Check availability before booking.
 5. Ask for the patient's phone number.
 6. Read the phone number back digit by digit.
 7. Ask the patient to confirm the phone number.
 8. Only after the patient explicitly confirms, call the booking tool.
-9. Tell the patient whether booking succeeded or failed.
+9. Report the actual booking result.
 
 CANCELLATION RULES:
 
@@ -114,9 +128,9 @@ CANCELLATION RULES:
 APPOINTMENT RULES:
 
 - Never book an unavailable slot.
-- Never cancel an appointment without confirmation.
+- Never cancel without confirmation.
 - Never invent appointment IDs.
-- Always report the actual result returned by the database.
+- Always report the actual database result.
 
 IMPORTANT:
 
@@ -136,23 +150,16 @@ async def find_doctors(
     params: FunctionCallParams,
     specialization: str = ""
 ):
-    """
-    Find all doctors or doctors matching a specialization.
-
-    Args:
-        specialization: Doctor specialization, such as
-                        Cardiologist or Dermatologist.
-                        Leave empty to find all doctors.
-    """
-
     try:
-
         if specialization.strip():
+
             doctors = await asyncio.to_thread(
                 get_doctors_by_specialization,
                 specialization
             )
+
         else:
+
             doctors = await asyncio.to_thread(
                 get_all_doctors
             )
@@ -182,17 +189,7 @@ async def check_availability(
     appointment_date: str,
     appointment_time: str
 ):
-    """
-    Check whether a doctor's appointment slot is available.
-
-    Args:
-        doctor_id: Doctor ID from the doctor list.
-        appointment_date: Date in YYYY-MM-DD format.
-        appointment_time: Time in HH:MM:SS format.
-    """
-
     try:
-
         result = await asyncio.to_thread(
             check_slot_availability,
             doctor_id,
@@ -225,27 +222,13 @@ async def make_appointment(
     appointment_time: str,
     phone_number_confirmed: bool
 ):
-    """
-    Book an appointment for a patient.
-
-    Only call this after the patient has explicitly
-    confirmed their phone number.
-
-    Args:
-        phone_number: Patient's phone number.
-        doctor_id: Doctor ID.
-        appointment_date: Date in YYYY-MM-DD format.
-        appointment_time: Time in HH:MM:SS format.
-        phone_number_confirmed: True only after the
-                                patient confirms the number.
-    """
-
     try:
-
         if not phone_number_confirmed:
+
             await params.result_callback({
                 "error": "Phone number confirmation is required."
             })
+
             return
 
         result = await asyncio.to_thread(
@@ -277,15 +260,7 @@ async def get_appointments(
     params: FunctionCallParams,
     phone_number: str
 ):
-    """
-    Retrieve appointments belonging to a patient.
-
-    Args:
-        phone_number: Patient's registered phone number.
-    """
-
     try:
-
         appointments = await asyncio.to_thread(
             get_patient_appointments,
             phone_number
@@ -316,25 +291,13 @@ async def cancel_patient_appointment(
     phone_number: str,
     phone_number_confirmed: bool
 ):
-    """
-    Cancel an existing patient appointment.
-
-    Only call this after the patient confirms their
-    phone number and agrees to cancel the appointment.
-
-    Args:
-        appointment_id: ID of the appointment to cancel.
-        phone_number: Patient's registered phone number.
-        phone_number_confirmed: True only after the
-                                patient confirms the number.
-    """
-
     try:
-
         if not phone_number_confirmed:
+
             await params.result_callback({
                 "error": "Phone number confirmation is required."
             })
+
             return
 
         result = await asyncio.to_thread(
@@ -363,11 +326,8 @@ async def cancel_patient_appointment(
 def create_ai_services():
 
     gemini_key = os.getenv("GOOGLE_API_KEY")
-
     elevenlabs_key = os.getenv("ELEVENLABS_API_KEY")
-
     voice_id = os.getenv("ELEVENLABS_VOICE_ID")
-
 
     if not gemini_key:
         raise ValueError("GOOGLE_API_KEY is missing")
@@ -378,12 +338,10 @@ def create_ai_services():
     if not voice_id:
         raise ValueError("ELEVENLABS_VOICE_ID is missing")
 
-
     # Speech To Text
     stt = ElevenLabsRealtimeSTTService(
         api_key=elevenlabs_key
     )
-
 
     # Gemini LLM
     llm = GoogleLLMService(
@@ -396,17 +354,38 @@ def create_ai_services():
         stream_idle_timeout_secs=30.0
     )
 
-
     # Text To Speech
     tts = ElevenLabsTTSService(
         api_key=elevenlabs_key,
-         settings=ElevenLabsTTSService.Settings(
-        voice=voice_id
+        settings=ElevenLabsTTSService.Settings(
+            voice=voice_id
+        )
     )
-    )
-
 
     return stt, llm, tts
+
+
+# --------------------------------------------------
+# TRANSCRIPT PROCESSOR
+# --------------------------------------------------
+
+class TranscriptProcessor(FrameProcessor):
+
+    def __init__(self, role):
+        super().__init__()
+        self.role = role
+
+    async def process_frame(self, frame, direction):
+
+        await super().process_frame(frame, direction)
+
+        if isinstance(frame, TranscriptionFrame):
+            logger.info(f"{self.role} transcription: {frame.text}")
+
+        elif isinstance(frame, TextFrame):
+            logger.info(f"{self.role} response: {frame.text}")
+
+        await self.push_frame(frame, direction)
 
 
 # --------------------------------------------------
@@ -417,7 +396,6 @@ async def run_bot(webrtc_connection):
 
     logger.info("Starting NexovAI voice assistant")
 
-
     # Create WebRTC transport
     transport = SmallWebRTCTransport(
         webrtc_connection=webrtc_connection,
@@ -427,10 +405,8 @@ async def run_bot(webrtc_connection):
         )
     )
 
-
     # Initialize AI services
     stt, llm, tts = create_ai_services()
-
 
     # Register appointment tools
     context = LLMContext(
@@ -443,7 +419,6 @@ async def run_bot(webrtc_connection):
         ]
     )
 
-
     # Create conversation aggregators
     user_aggregator, assistant_aggregator = (
         LLMContextAggregatorPair(
@@ -454,18 +429,18 @@ async def run_bot(webrtc_connection):
         )
     )
 
-
     # Create voice pipeline
     pipeline = Pipeline([
         transport.input(),
         stt,
+        TranscriptProcessor("user"),
         user_aggregator,
         llm,
+        TranscriptProcessor("assistant"),
         tts,
         transport.output(),
         assistant_aggregator
     ])
-
 
     # Create pipeline worker
     worker = PipelineWorker(
@@ -476,15 +451,12 @@ async def run_bot(webrtc_connection):
         )
     )
 
-
     # Create worker runner
     runner = WorkerRunner(
         handle_sigint=False
     )
 
-
     await runner.add_workers(worker)
-
 
     # Browser connected event
     @transport.event_handler("on_client_connected")
@@ -505,7 +477,6 @@ async def run_bot(webrtc_connection):
             LLMRunFrame()
         ])
 
-
     # Browser disconnected event
     @transport.event_handler("on_client_disconnected")
     async def on_client_disconnected(transport, client):
@@ -513,7 +484,6 @@ async def run_bot(webrtc_connection):
         logger.info("Browser voice client disconnected")
 
         await runner.cancel()
-
 
     logger.info("NexovAI voice pipeline started")
 

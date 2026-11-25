@@ -19,10 +19,18 @@ from pipecat.transports.smallwebrtc.request_handler import (
 )
 
 
+# --------------------------------------------------
+# FASTAPI APPLICATION
+# --------------------------------------------------
+
 app = FastAPI(title="NexovAI Doctor Assistant")
 
 webrtc_handler = SmallWebRTCRequestHandler()
 
+
+# --------------------------------------------------
+# REQUEST MODELS
+# --------------------------------------------------
 
 class BookingRequest(BaseModel):
     phone_number: str
@@ -42,6 +50,10 @@ class AvailabilityRequest(BaseModel):
     appointment_time: str
 
 
+# --------------------------------------------------
+# CORS CONFIGURATION
+# --------------------------------------------------
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -51,6 +63,10 @@ app.add_middleware(
 )
 
 
+# --------------------------------------------------
+# HOME API
+# --------------------------------------------------
+
 @app.get("/")
 def home():
     return {
@@ -58,10 +74,18 @@ def home():
     }
 
 
+# --------------------------------------------------
+# DOCTOR API
+# --------------------------------------------------
+
 @app.get("/doctors")
 def get_doctors():
     return get_all_doctors()
 
+
+# --------------------------------------------------
+# BOOK APPOINTMENT API
+# --------------------------------------------------
 
 @app.post("/appointments")
 def create_appointment(booking: BookingRequest):
@@ -82,6 +106,10 @@ def create_appointment(booking: BookingRequest):
     }
 
 
+# --------------------------------------------------
+# GET PATIENT APPOINTMENTS API
+# --------------------------------------------------
+
 @app.get("/appointments/{phone_number}")
 def get_appointments(phone_number: str):
 
@@ -92,6 +120,10 @@ def get_appointments(phone_number: str):
         "appointments": appointments
     }
 
+
+# --------------------------------------------------
+# CANCEL APPOINTMENT API
+# --------------------------------------------------
 
 @app.post("/appointments/cancel")
 def cancel_patient_appointment(request: CancellationRequest):
@@ -111,6 +143,10 @@ def cancel_patient_appointment(request: CancellationRequest):
     }
 
 
+# --------------------------------------------------
+# CHECK AVAILABILITY API
+# --------------------------------------------------
+
 @app.post("/availability")
 def check_availability(request: AvailabilityRequest):
 
@@ -126,7 +162,9 @@ def check_availability(request: AvailabilityRequest):
     return {"message": "Slot already booked"}
 
 
-# WebRTC voice assistant endpoint
+# --------------------------------------------------
+# WEBRTC VOICE ASSISTANT ENDPOINT
+# --------------------------------------------------
 
 @app.post("/api/offer")
 async def handle_webrtc_offer(
@@ -134,12 +172,18 @@ async def handle_webrtc_offer(
     background_tasks: BackgroundTasks
 ):
 
+    print("API OFFER ENDPOINT HIT")
+
     async def connection_callback(connection):
+
+        print("WEBRTC CONNECTION CALLBACK STARTED")
 
         background_tasks.add_task(
             run_bot,
             connection
         )
+
+        print("RUN_BOT TASK ADDED")
 
     answer = await webrtc_handler.handle_web_request(
         request=request,
@@ -149,7 +193,9 @@ async def handle_webrtc_offer(
     return answer
 
 
-# WebRTC ICE candidate endpoint
+# --------------------------------------------------
+# WEBRTC ICE CANDIDATE ENDPOINT
+# --------------------------------------------------
 
 @app.patch("/api/offer")
 async def handle_ice_candidates(
@@ -162,6 +208,10 @@ async def handle_ice_candidates(
         "status": "success"
     }
 
+
+# --------------------------------------------------
+# APPLICATION SHUTDOWN
+# --------------------------------------------------
 
 @app.on_event("shutdown")
 async def shutdown_event():

@@ -1,200 +1,194 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>NexovAI | Healthcare Assistant</title>
+    <title>NexovAI - Healthcare Assistant</title>
 
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-    <!-- Navigation Bar -->
+    <!-- Navbar -->
     <header class="navbar">
-
-        <div class="brand">
-            <div class="brand-icon">✚</div>
-
+        <div class="logo">
+            <span class="logo-icon">✚</span>
             <div>
                 <h2>NexovAI</h2>
-                <span>Healthcare Assistant</span>
+                <p>Healthcare Assistant</p>
             </div>
         </div>
 
-        <nav class="nav-links">
-            <a href="#home" class="active">Dashboard</a>
+        <nav>
+            <a href="#home">Dashboard</a>
             <a href="#assistant">AI Assistant</a>
             <a href="#doctors">Our Doctors</a>
         </nav>
 
-        <div class="header-status">
-            <span class="status-dot"></span>
+        <div class="nav-status">
+            <span class="online-dot"></span>
             AI Powered
         </div>
-
     </header>
 
 
-    <main class="container">
+    <!-- Main Content -->
+    <main>
 
         <!-- Welcome Section -->
         <section class="welcome-section" id="home">
 
             <div class="welcome-content">
-
-                <p class="welcome-label">WELCOME TO NEXOVAI</p>
+                <span class="welcome-label">WELCOME TO NEXOVAI</span>
 
                 <h1>Your Health,<br>Our Priority.</h1>
 
-                <p class="welcome-text">
-                    Your personal healthcare assistant is here to help.
-                    Find doctors, check availability and manage your
-                    appointments through a simple voice conversation.
+                <p>
+                    Talk to our AI assistant to find doctors
+                    and manage your appointments easily.
                 </p>
 
-                <a href="#assistant" class="welcome-btn">
+                <a href="#assistant" class="primary-link">
                     Talk to AI Assistant →
                 </a>
-
             </div>
 
-            <div class="welcome-visual">
-                <div class="welcome-icon">✚</div>
-                <p>Smart Healthcare Assistance</p>
-                <span>Simple. Reliable. Accessible.</span>
+            <div class="welcome-icon">
+                <div class="medical-circle">
+                    ✚
+                </div>
             </div>
 
         </section>
 
 
-        <!-- Quick Information -->
+        <!-- Overview Cards -->
         <section class="overview-section">
 
             <div class="overview-card">
-                <div class="overview-icon">👨‍⚕️</div>
+                <div class="overview-icon blue">✚</div>
                 <div>
                     <h3>Expert Doctors</h3>
-                    <p>Explore our medical team</p>
+                    <p>Find the right doctor for your needs.</p>
                 </div>
             </div>
 
             <div class="overview-card">
-                <div class="overview-icon">🎙</div>
+                <div class="overview-icon purple">🎙</div>
                 <div>
                     <h3>Voice Assistance</h3>
-                    <p>Talk naturally with NexovAI</p>
+                    <p>Speak naturally with our AI assistant.</p>
                 </div>
             </div>
 
             <div class="overview-card">
-                <div class="overview-icon">📅</div>
+                <div class="overview-icon green">📅</div>
                 <div>
                     <h3>Easy Appointments</h3>
-                    <p>Book and manage appointments</p>
+                    <p>Book and manage your appointments.</p>
                 </div>
             </div>
 
         </section>
 
 
-        <!-- AI Assistant Section -->
-        <section class="dashboard-grid" id="assistant">
+        <!-- Dashboard -->
+        <section class="dashboard-section" id="assistant">
 
-            <!-- Voice Assistant -->
-            <div class="card call-card">
-
-                <div class="card-heading">
-
-                    <div>
-                        <span class="section-label">AI HEALTHCARE ASSISTANT</span>
-                        <h2>Talk to NexovAI</h2>
-                        <p>Your voice-powered appointment assistant</p>
-                    </div>
-
-                    <div class="assistant-icon">AI</div>
-
-                </div>
-
-
-                <div class="call-center">
-
-                    <div class="voice-icon">🎙</div>
-
-                    <h3>How can I help you today?</h3>
-
-                    <p>
-                        Speak with our AI assistant to find doctors,
-                        check available slots and book appointments.
-                    </p>
-
-
-                    <div class="connection-status">
-
-                        <span id="statusDot" class="status-dot offline"></span>
-
-                        <span id="callStatus">Not Connected</span>
-
-                    </div>
-
-
-                    <div class="button-group">
-
-                        <button id="startCallBtn" class="start-btn">
-                            ▶ Start Call
-                        </button>
-
-                        <button id="endCallBtn" class="end-btn" disabled>
-                            ■ End Call
-                        </button>
-
-                    </div>
-
-                    <p class="call-note">
-                        Please allow microphone access to start your conversation.
-                    </p>
-
-                </div>
-
+            <div class="section-heading">
+                <span>YOUR PERSONAL HEALTHCARE ASSISTANT</span>
+                <h2>AI Assistant Dashboard</h2>
+                <p>Connect with NexovAI and manage your appointments.</p>
             </div>
 
 
-            <!-- Conversation Section -->
-            <div class="card transcript-card">
+            <div class="dashboard-grid">
 
-                <div class="card-heading">
+                <!-- Voice Assistant Card -->
+                <div class="card assistant-card">
 
-                    <div>
-                        <span class="section-label">LIVE CHAT</span>
-                        <h2>Conversation</h2>
-                        <p>Your conversation with NexovAI</p>
+                    <div class="card-heading">
+                        <div>
+                            <h2>✚ Talk to NexovAI</h2>
+                            <p>Voice-powered doctor appointment assistant</p>
+                        </div>
+
+                        <span class="ai-badge">AI</span>
                     </div>
 
-                    <span class="live-label">● LIVE</span>
 
-                </div>
+                    <div class="call-center">
 
+                        <div class="voice-icon">
+                            🎙
+                        </div>
 
-                <div id="transcript" class="transcript">
+                        <h3>How can I help you today?</h3>
 
-                    <div class="empty-transcript">
-
-                        <div>💬</div>
-
-                        <h3>Your conversation starts here</h3>
-
-                        <p>
-                            Start a voice call and your conversation
-                            will appear in this section.
+                        <p class="call-description">
+                            Start a voice conversation with your AI assistant.
                         </p>
 
+
+                        <div class="connection-status">
+                            <span id="statusDot" class="status-dot"></span>
+                            <span id="callStatus">Not Connected</span>
+                        </div>
+
+
+                        <div class="call-buttons">
+
+                            <button id="startCallBtn" class="start-btn">
+                                ▶ Start Call
+                            </button>
+
+                            <button id="endCallBtn" class="end-btn" disabled>
+                                ■ End Call
+                            </button>
+
+                        </div>
+
+                        <audio id="remoteAudio" autoplay playsinline></audio>
+
                     </div>
 
                 </div>
 
-                <audio id="remoteAudio" autoplay></audio>
+
+                <!-- Conversation Card -->
+                <div class="card conversation-card">
+
+                    <div class="card-heading">
+                        <div>
+                            <h2>Conversation</h2>
+                            <p>Your live conversation appears here.</p>
+                        </div>
+
+                        <span class="live-label">
+                            <span class="online-dot"></span>
+                            LIVE
+                        </span>
+                    </div>
+
+
+                    <div id="transcript" class="transcript">
+
+                        <div class="empty-transcript">
+                            <div>💬</div>
+
+                            <h3>No conversation yet</h3>
+
+                            <p>
+                                Start a voice call to begin talking
+                                with NexovAI.
+                            </p>
+                        </div>
+
+                    </div>
+
+                </div>
 
             </div>
 
@@ -205,59 +199,43 @@
         <section class="doctors-section" id="doctors">
 
             <div class="section-heading">
-
-                <div>
-                    <span class="section-label">OUR MEDICAL TEAM</span>
-
-                    <h2>Meet Our Doctors</h2>
-
-                    <p>
-                        Find experienced doctors across different
-                        medical specializations.
-                    </p>
-                </div>
-
-                <span class="doctor-badge">
-                    Medical Team
-                </span>
-
+                <span>OUR MEDICAL TEAM</span>
+                <h2>Meet Our Doctors</h2>
+                <p>Explore our available doctors and their specializations.</p>
             </div>
 
 
             <div id="doctorsList" class="doctors-grid">
 
-                <p class="loading-text">
-                    Loading doctors...
-                </p>
+                <p class="loading-text">Loading doctors...</p>
 
             </div>
 
         </section>
 
+    </main>
 
-        <!-- Footer -->
-        <footer>
 
-            <div class="footer-brand">
-                <span>✚</span>
-                <strong>NexovAI</strong>
-            </div>
+    <!-- Footer -->
+    <footer class="footer">
+
+        <div class="footer-content">
+            <h2>NexovAI</h2>
 
             <p>
-                AI-powered healthcare appointment assistance.
+                Your Health, Our Priority.
+                Making healthcare appointments easier with AI.
             </p>
 
             <p class="copyright">
-                © 2026 NexovAI Doctor Assistant. All rights reserved.
+                © 2026 NexovAI. All Rights Reserved.
             </p>
+        </div>
 
-        </footer>
-
-    </main>
+    </footer>
 
 
     <script src="script.js"></script>
 
 </body>
-
 </html>

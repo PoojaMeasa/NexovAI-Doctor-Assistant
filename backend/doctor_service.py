@@ -1,45 +1,63 @@
 from datetime import timedelta
-from db import get_db_connection
+
+try:
+    from .db import get_db_connection
+except ImportError:
+    from db import get_db_connection
 
 
 def get_all_doctors():
     connection = get_db_connection()
     cursor = connection.cursor(dictionary=True)
 
-    cursor.execute("SELECT * FROM doctors")
-    doctors = cursor.fetchall()
+    try:
+        cursor.execute("SELECT * FROM doctors")
+        doctors = cursor.fetchall()
 
-    cursor.close()
-    connection.close()
+        return doctors
 
-    return doctors
+    finally:
+        cursor.close()
+        connection.close()
 
 
 def get_doctors_by_specialization(specialization):
     connection = get_db_connection()
     cursor = connection.cursor(dictionary=True)
 
-    query = """
-        SELECT * FROM doctors
-        WHERE specialization LIKE %s
-    """
+    try:
+        query = """
+            SELECT * FROM doctors
+            WHERE specialization LIKE %s
+        """
 
-    cursor.execute(query, (f"%{specialization}%",))
-    doctors = cursor.fetchall()
+        cursor.execute(query, (f"%{specialization}%",))
+        doctors = cursor.fetchall()
 
-    cursor.close()
-    connection.close()
+        return doctors
 
-    return doctors
+    finally:
+        cursor.close()
+        connection.close()
 
 
-def book_appointment(phone_number, doctor_id, appointment_date, appointment_time):
+def book_appointment(
+    phone_number,
+    doctor_id,
+    appointment_date,
+    appointment_time
+):
     connection = get_db_connection()
     cursor = connection.cursor()
 
     try:
         cursor.execute(
-            "SELECT doctor_id FROM doctors WHERE doctor_id = %s FOR UPDATE",
+            """
+            SELECT doctor_id
+            FROM doctors
+            WHERE doctor_id = %s
+            FOR UPDATE
+            """,
             (doctor_id,)
         )
 
@@ -50,7 +68,8 @@ def book_appointment(phone_number, doctor_id, appointment_date, appointment_time
             return "Doctor not found"
 
         query = """
-            SELECT COUNT(*) FROM appointments
+            SELECT COUNT(*)
+            FROM appointments
             WHERE doctor_id = %s
             AND appointment_date = %s
             AND appointment_time = %s
@@ -70,16 +89,27 @@ def book_appointment(phone_number, doctor_id, appointment_date, appointment_time
 
         insert_query = """
             INSERT INTO appointments
-            (phone_number, doctor_id, appointment_date, appointment_time)
+            (
+                phone_number,
+                doctor_id,
+                appointment_date,
+                appointment_time
+            )
             VALUES (%s, %s, %s, %s)
         """
 
         cursor.execute(
             insert_query,
-            (phone_number, doctor_id, appointment_date, appointment_time)
+            (
+                phone_number,
+                doctor_id,
+                appointment_date,
+                appointment_time
+            )
         )
 
         appointment_id = cursor.lastrowid
+
         connection.commit()
 
         return appointment_id
@@ -106,7 +136,11 @@ def cancel_appointment(appointment_id, phone_number):
             AND status = 'BOOKED'
         """
 
-        cursor.execute(query, (appointment_id, phone_number))
+        cursor.execute(
+            query,
+            (appointment_id, phone_number)
+        )
+
         connection.commit()
 
         return cursor.rowcount > 0
@@ -126,20 +160,27 @@ def get_patient_appointments(phone_number):
 
     try:
         query = """
-            SELECT a.*, d.doctor_name, d.specialization
+            SELECT
+                a.*,
+                d.doctor_name,
+                d.specialization
             FROM appointments a
-            JOIN doctors d ON a.doctor_id = d.doctor_id
+            JOIN doctors d
+                ON a.doctor_id = d.doctor_id
             WHERE a.phone_number = %s
         """
 
         cursor.execute(query, (phone_number,))
+
         appointments = cursor.fetchall()
 
         for appointment in appointments:
             appointment_time = appointment["appointment_time"]
 
             if isinstance(appointment_time, timedelta):
-                total_seconds = int(appointment_time.total_seconds())
+                total_seconds = int(
+                    appointment_time.total_seconds()
+                )
 
                 hours = total_seconds // 3600
                 minutes = (total_seconds % 3600) // 60
@@ -156,13 +197,18 @@ def get_patient_appointments(phone_number):
         connection.close()
 
 
-def check_slot_availability(doctor_id, appointment_date, appointment_time):
+def check_slot_availability(
+    doctor_id,
+    appointment_date,
+    appointment_time
+):
     connection = get_db_connection()
     cursor = connection.cursor()
 
     try:
         query = """
-            SELECT COUNT(*) FROM appointments
+            SELECT COUNT(*)
+            FROM appointments
             WHERE doctor_id = %s
             AND appointment_date = %s
             AND appointment_time = %s
